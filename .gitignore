@@ -1,0 +1,10 @@
+*
+!.gitignore
+!.gitattributes
+!README.md
+!INPUT_SCHEMA.md
+!run_analysis.R
+!scripts/
+!scripts/*.R
+!tests/
+!tests/*.R
