@@ -4,6 +4,7 @@ type: software
 title: "Gallbladder cancer population-composition analysis"
 version: 1.0.1
 date-released: 2026-10-27
+doi: "10.5281/zenodo.23686235"
 authors:
   - name: "dongjunbo82-collab"
 repository-code: "https://github.com/dongjunbo82-collab/gallbladder-incidence-sensitivity"

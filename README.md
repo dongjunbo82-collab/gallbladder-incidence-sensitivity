@@ -2,6 +2,8 @@
 
 R code for age-only and joint age–ethnicity standardization of gallbladder cancer incidence in US SEER registries, paired APC comparisons, descriptive rate decomposition, and sex-stratified sensitivity analysis.
 
+Version 1.0.1 archive: [10.5281/zenodo.23686235](https://doi.org/10.5281/zenodo.23686235).
+
 This is a code-only repository. It contains no manuscript, source export, case record, population dataset, analytical result dataset, figure, or author contact details. Obtain the authorized inputs separately under the applicable SEER access and data-use terms. Do not place inputs or generated outputs inside this repository.
 
 ## Run
@@ -40,7 +42,7 @@ Annual-trend simulations use 10000 draws and seed 20261025; period decomposition
 
 Period decomposition separates the absolute change into composition and within-stratum components using symmetric weights. Periods are 2000–2004 versus 2019–2023, 2000–2004 versus 2015–2019, and 2000 versus 2023. Contributions are descriptive, not causal or preventable fractions. Denominators and reference weights are fixed. No registry-level resampling, reporting-delay adjustment, mortality modeling or screening inference is performed. Subgroup comparisons are exploratory without multiplicity correction. Conditional independence of sex-specific draws does not capture shared registry dependence.
 
-Generated outputs can include sparse cells. Keep them private until permitted sharing is confirmed. The in-memory tests check mathematical properties, not independent replication. Exact study-data reproduction requires the matching authorized exports. No reuse license has been selected.
+Generated outputs can include sparse cells. Keep them private until permitted sharing is confirmed. The in-memory tests check mathematical properties, not independent replication. Exact study-data reproduction requires the matching authorized exports. Consult the Zenodo archive metadata for its license. No separate software license file is included.
 
 ## Method sources
 
