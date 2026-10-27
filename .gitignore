@@ -1,10 +1,15 @@
+# Data and generated outputs are never part of this code repository.
 *
+!*/
+!*.R
+!*.md
 !.gitignore
 !.gitattributes
-!README.md
-!INPUT_SCHEMA.md
-!run_analysis.R
-!scripts/
-!scripts/*.R
-!tests/
-!tests/*.R
+!CITATION.cff
+.Rhistory
+.RData
+.Rproj.user/
+private_inputs/
+results/
+logs/
+figures/

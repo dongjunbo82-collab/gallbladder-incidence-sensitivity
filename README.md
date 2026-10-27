@@ -1,95 +1,50 @@
-# Gallbladder incidence sensitivity analysis
+# Gallbladder cancer population-composition analysis
 
-Code-only R workflow for case-definition sensitivity, demographic standardization,
-continuous-age trends, descriptive population decomposition and secondary
-competing-risk analyses of gallbladder malignancy.
+R code for age-only and joint age–ethnicity standardization of gallbladder cancer incidence in US SEER registries, paired APC comparisons, descriptive rate decomposition, and sex-stratified sensitivity analysis.
 
-No manuscript, patient records, SEER export, aggregate result dataset, figure,
-credential or author contact information is included. All inputs must be obtained
-separately under the applicable SEER access and data-use terms.
+This is a code-only repository. It contains no manuscript, source export, case record, population dataset, analytical result dataset, figure, or author contact details. Obtain the authorized inputs separately under the applicable SEER access and data-use terms. Do not place inputs or generated outputs inside this repository.
 
-## Requirements and execution
+## Run
 
-The analysis environment used R 4.6.1 and SEER*Stat 9.0.43.0 exports from the
-November 2025 SEER Research Data submission (2000-2023). Required R packages:
-splines, survival and cmprsk; optional plotting also requires ggplot2, patchwork,
-scales and ragg. The runner checks packages but does not install software.
-
-Run from the repository directory, supplying your own local paths:
+The analysis environment used R 4.6.1 and SEER*Stat 9.0.43.0. Required R packages are base/recommended `splines` and `MASS`. Optional figure generation uses `ggplot2` and `patchwork`. The workflow checks dependencies but installs nothing and performs no network requests.
 
 ```text
 Rscript tests/test_methods.R
-Rscript run_analysis.R OUTPUT_DIRECTORY RAW_DIRECTORY --no-figures
+Rscript run_analysis.R OUTPUT_DIRECTORY RAW_DIRECTORY
+Rscript run_analysis.R ANOTHER_OUTPUT_DIRECTORY RAW_DIRECTORY --figures
 ```
 
-Omit `--no-figures` to generate TIFF statistical plots and local PNG previews.
-Choose a new or empty output directory outside both the code and raw directories.
-Inputs are read-only. Execution logs and generated results remain outside this
-repository. Consult INPUT_SCHEMA.md for filenames and field conventions.
+Use a new or empty output directory, separate from both the code and raw-data directories. The parent output directory must already exist. Each run reads three exports described in [INPUT_SCHEMA.md](INPUT_SCHEMA.md), reconstructs the analysis inputs, and writes private inputs, results and execution logs outside the repository. No precomputed derived dataset is required.
 
 ## Workflow
 
-The runner executes the scripts in this order:
+| Script | Purpose |
+|---|---|
+| `scripts/prepare_inputs.R` | Validate C2/P2 counts, retain zero-count cells, apply morphology definitions, calculate reference shares and WLS intervals, and assemble period cells. |
+| `scripts/paired_trends.R` | Fit window-specific Poisson generators; calculate paired APC contrasts, reference-weight sensitivity, calendar diagnostics, gamma rate intervals and descriptive decomposition. |
+| `scripts/uncertainty_checks.R` | Fit window-specific negative binomial generators and calculate annual-rate Fay–Feuer intervals. |
+| `scripts/sex_analysis.R` | Validate P3 against P2 and compute sex-specific APCs, paired contrasts and direct between-sex differences. |
+| `scripts/figures.R` | Optionally generate the three main incidence/composition plots and two supplementary diagnostic plots. |
 
-1. `08_redesign_core_analysis.R`: morphology-based counts, denominator checks,
-   initial age-standardized trends, continuous-age models and coding composition.
-2. `09_competing_risk_analysis.R`: outcome cohorts, cumulative incidence,
-   Fine-Gray and cause-specific Cox models.
-3. `11_revision_analysis.R`: unrounded directly standardized age-cutoff estimates,
-   spline/window sensitivity, cohort flow and sequential outcome adjustment.
-4. `12_time_varying_mortality.R`: age-by-log-time outcome associations.
-5. `13_ethnicity_analysis.R`: common-population age-only/joint standardization,
-   race-specific slopes and adjusted continuous-age models.
-6. `14_reframe_analysis.R`: morphology audit, paired model contrasts,
-   5,000-draw Poisson decomposition, sex trends and stage incidence reconstruction.
-7. `15_robustness_analysis.R`: zero-cell counts/weights, 50,000-draw Poisson and
-   Jeffreys Gamma posterior sensitivity, SEER classification-based sensitivity,
-   and Fay-Feuer gamma stage intervals.
-8. `10_manuscript_figures.R` (optional): statistical plotting from local results.
+The primary population is all malignant C23.9 tumors (D1). The SEER Rare Cancer Classification 15.1 / recode 60 category supplies a supporting analysis. Adenocarcinoma NOS (8140/3; D4) is a sensitivity population, not all adenocarcinomas. Numeric ranges 8010–8576 (D2) and 8140–8389 (D3) are used for coding audits, not clinically pure adenocarcinoma definitions. The populations overlap.
 
-The numeric script names and some output keys are retained for compatibility.
-Scripts 11 and 13 provide the directly standardized trend comparisons used in the
-final analysis. Script 15 provides the current gamma stage intervals; the Wald
-intervals produced by script 14 are intermediate outputs.
+## Methods
 
-## Definitions and interpretation
+Rates use the 2000 US age standard, normalized separately within ages 20–49 and 50+. Joint standardization fixes within-five-year-age-band ethnic population shares to 2000. The 2020 and pooled 2000–2023 person-year references provide sensitivity comparisons. Unknown-race cases are audited and excluded from paired rates because their population denominator is unavailable. Both comparators use the same known-ethnicity cases.
 
-- D1: all malignant C23.9 tumors. D2: numeric morphology range 8010-8576.
-- D3: numeric range 8140-8389; it includes neuroendocrine/mixed entities and is not
-  a complete or pure adenocarcinoma definition.
-- D4: adenocarcinoma NOS, 8140/3. Legacy `strict` keys identify this code only.
-- The additional malignant adenocarcinoma-with-variants cohort uses the exact
-  SEER Rare Cancer Classification 15.1 / recode 60 code list. Its internal key
-  `Glandular_subset` is a compatibility identifier for this variant category.
+APCs are obtained from inverse-variance-weighted log-rate regressions; group-specific confidence intervals use the residual variance of a two-age-group interaction model. The contrast Δ is joint minus age-only APC, in percentage points/year, computed before rounding. It is not the annual change in a younger/older rate ratio.
 
-Age-group APC and annual change in the younger/older rate ratio are different
-estimands. Legacy `differential_apc` fields mean rate-ratio annual change, not an
-arithmetic difference in APC percentage points. The cutoff table's `dispersion`
-field denotes WLS residual variance, not quasi-Poisson dispersion.
+Each calendar-window count generator is fitted only to its included years, with spline knots recalculated within that window. Positive fitted means allow nonzero simulated counts for observed zero cells. Both rates, variances and WLS weights are recalculated from the same count draw. Smooth-generator basic intervals are centered with Δfit, obtained by applying the entire estimator to fitted means. Plug-in Poisson percentile intervals and Jeffreys Gamma posterior credible intervals are distinct uncertainty analyses.
 
-Decomposition separates absolute period-rate differences into composition and
-within-stratum components. It is descriptive, not causal. Population denominators
-are fixed. Jeffreys Gamma posterior intervals are credible intervals and differ
-from plug-in Poisson bootstrap confidence intervals. The primary decomposition
-uses 5,000 draws; robustness resimulations use 50,000. Seeds are fixed in code.
-Zero-cell and posterior checks are not a claim of frequentist interval coverage.
+Annual-trend simulations use 10000 draws and seed 20261025; period decomposition uses a separate seed 20261026. Negative binomial NB2 sensitivity uses seed 261026, 10000 draws, and fixed fitted theta; theta uncertainty is not integrated. Sex-stratified analysis uses seed 2610261, 10000 paired draws, independent sex/window generators, and the common within-age 2000 ethnic shares pooled over both sexes. Own-sex references are secondary checks. Between-sex intervals use the replicate-wise difference between female and male Δ, not separate P values.
 
-SEER 8 overlaps SEER 17 and is a registry sensitivity analysis, not independent
-validation. Rates are not reporting-delay adjusted. Sex models use rounded
-exported rates and are not jointly ethnicity-standardized. Outcome analyses do
-not establish treatment effects. No direct replication of another publication is
-claimed.
+Period decomposition separates the absolute change into composition and within-stratum components using symmetric weights. Periods are 2000–2004 versus 2019–2023, 2000–2004 versus 2015–2019, and 2000 versus 2023. Contributions are descriptive, not causal or preventable fractions. Denominators and reference weights are fixed. No registry-level resampling, reporting-delay adjustment, mortality modeling or screening inference is performed. Subgroup comparisons are exploratory without multiplicity correction. Conditional independence of sex-specific draws does not capture shared registry dependence.
 
-The in-memory tests verify mathematical properties, not study-data reproduction.
-Full reproduction additionally requires the exact authorized input exports.
+Generated outputs can include sparse cells. Keep them private until permitted sharing is confirmed. The in-memory tests check mathematical properties, not independent replication. Exact study-data reproduction requires the matching authorized exports. No reuse license has been selected.
 
 ## Method sources
 
-- SEER Rare Cancer Classification, category 15.1:
-  https://seer.cancer.gov/seerstat/variables/seer/raresiterecode/
-- Symmetric rate decomposition: doi:10.1080/01621459.1955.10501299.
-- Fay-Feuer gamma intervals: doi:10.1002/(SICI)1097-0258(19970415)16:7<791::AID-SIM500>3.0.CO;2-#.
-
-No manuscript-building, author-management or submission-package scripts are
-included. No automatic data download or network operation is performed by the R
-workflow. No reuse license has been selected.
+- [SEER Rare Cancer Classification](https://seer.cancer.gov/seerstat/variables/seer/raresiterecode/), category 15.1.
+- [2000 US standard population](https://seer.cancer.gov/stdpopulations/stdpop.20ages.html).
+- Symmetric decomposition: [Kitagawa (1955)](https://doi.org/10.1080/01621459.1955.10501299).
+- Gamma intervals: [Fay and Feuer (1997)](https://doi.org/10.1002/(SICI)1097-0258(19970415)16:7%3C791::AID-SIM500%3E3.0.CO;2-%23).

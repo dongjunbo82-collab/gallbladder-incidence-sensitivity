@@ -1,81 +1,40 @@
-# Local input requirements
+# Authorized input exports
 
-This document describes filenames and field names only. It contains no records,
-sample rows, extracted rates or result tables. Keep all input files outside the
-repository and never commit generated outputs.
+Supply three labeled CSV-format text exports in a private input directory. Despite the `.txt` extension, the verified exports are comma-delimited with a header row and are read with `read.csv(check.names=FALSE)`. Remove thousands separators in exported numeric fields. Retain zero-count cells and do not suppress cells in analytical exports. No input or result data are distributed.
 
-## Input filenames
+## Shared eligibility
 
-The runner requires 15 files from the same November 2025 SEER submission:
+SEER Research Data, 17 Registries, November 2025 submission, diagnoses 2000–2023. Primary site C23.9 (gallbladder), malignant behavior /3, ages ≥20 including 90+, both sexes and all tumor sequences. No histology restriction in source sessions. Rate sessions must use the matching SEER population geography. These rates are not delay-adjusted.
 
-```text
-C2_GB_AllMalignant_CaseListing_SEER17_2000-2023_labeled.txt
-P1_GB_AllMalignant_YearAge5_Rates_SEER17_2000-2023.csv
-V8_P1_GB_AllMalignant_YearAge5_Rates_SEER8_2000-2023.csv
-P2_GB_AllMalignant_YearAge5_RaceEthnicity_SEER17_2000-2023.txt
-R6_GB_D1_AllMalignant_AgeGroup_AAR_SEER17_2000-2023.txt
-R7_GB_D2_Carcinoma8010-8576_AgeGroup_AAR_SEER17_2000-2023.txt
-R8_GB_D3_Adenocarcinoma8140-8389_AgeGroup_AAR_SEER17_2000-2023.txt
-R9_GB_D4_Strict8140-3_AgeGroup_AAR_SEER17_2000-2023.txt
-V8_R6_GB_D1_AllMalignant_AgeGroup_AAR_SEER8_2000-2023.txt
-V8_R7_GB_D2_Carcinoma8010-8576_AgeGroup_AAR_SEER8_2000-2023.txt
-V8_R8_GB_D3_Adenocarcinoma8140-8389_AgeGroup_AAR_SEER8_2000-2023.txt
-V8_R9_GB_D4_Strict8140-3_AgeGroup_AAR_SEER8_2000-2023.txt
-R2_GBAC8140_EO20-49_AnnualRates_bySex_SEER17_2000-2023.csv
-R3_GBAC8140_EO20-49_5YRates_byRaceEthnicity_SEER17_2000-2023.csv
-R4b_GBAC8140_EO20-49_StageSpecificRates_SEER17_2004-2023.csv
-```
+The case listing is assumed to have applied these eligibility restrictions. If available fields include site or behavior, check these restrictions before running. The workflow cannot verify an export's database identity from its cells alone. Keep the original session and dictionary files locally for provenance.
 
-These are comma-delimited exports with preserved column names, despite some
-`.txt` extensions. Retain exact labels, zero cells and the matching dictionaries
-locally. Do not replace unavailable or suppressed values with zero. The fixed
-shape/count assertions in the scripts are validation constants, not distributed
-datasets. Exports with different sessions or database releases require review of
-those assertions and variable definitions before use.
+## C2 case listing
 
-## Case-listing fields
+Filename: `C2_GB_AllMalignant_CaseListing_SEER17_2000-2023_labeled.txt`
 
-C2 covers malignant primary site C23.9, diagnosis years 2000-2023, ages 20+.
-Required labeled columns include:
+Required labeled fields:
 
-- Year of diagnosis
-- Age recode with single ages and 90+
-- Histologic Type ICD-O-3
-- ICD-O-3 Hist/behav, malignant
-- Sex
-- Race and origin recode (NHW, NHB, NHAIAN, NHAPI, Hispanic)
-- Diagnostic Confirmation
-- Type of Reporting Source
-- Survival months
-- SEER cause-specific death classification
-- SEER other cause of death classification
-- Combined Summary Stage with Expanded Regional Codes (2004+)
-- Grade Recode (thru 2017)
-- Grade Pathological (2018+)
-- Grade Clinical (2018+)
+- `Age recode with single ages and 90+`
+- `Race and origin recode (NHW, NHB, NHAIAN, NHAPI, Hispanic)`
+- `Year of diagnosis`
+- `Histologic Type ICD-O-3`
 
-The analysis does not need personal identifiers. Do not add names, addresses or
-other identifying fields when obtaining or preparing the local exports.
+One row represents one eligible tumor. No identifiers, outcome or treatment columns are needed. The analysis uses the four named fields only.
 
-## Population and rate fields
+## P2 rate cells
 
-P1 files use an annual year column and wide age-band columns ending in `_Count`
-and `_Pop`. Age-band column prefixes begin with the lower age bound; the bands
-cover ages 20-24 through 85-89 and 90+. R6-R9 and V8 counterparts have an annual
-year column and `20_49_Rate`, `20_49_SE`, `20_49_Count`, `20_49_Pop`, `50_Rate`,
-`50_SE`, `50_Count`, `50_Pop` columns.
+Filename: `P2_GB_AllMalignant_YearAge5_RaceEthnicity_SEER17_2000-2023.txt`
 
-P2 is long-form and includes `Year_Annual_2000_2023`,
-`Age recode with <1 year olds and 90+`, the five-category race/origin field,
-`Count` and `Population`. Unknown race has no population denominator and is
-audited separately. Structural excluded-age placeholders must have zero count
-and population. Known-ethnicity population cells must be positive.
+Required fields: `Year_Annual_2000_2023`, `Age recode with <1 year olds and 90+`, `Race and origin recode (NHW, NHB, NHAIAN, NHAPI, Hispanic)`, `Count`, `Population`.
 
-R2 includes `Sex`, `Year of diagnosis`, `Age-Adjusted Rate/Trend`,
-`Standard Error/P-Value`, native trend confidence limits and APC rows.
-R4b includes `STAGE_LRD`, `PERIOD_STAGE_5Y`, `Age-Adjusted Rate`,
-`Standard Error`, `Lower Confidence Interval`, `Upper Confidence Interval`,
-`Count` and `Population`. R3 is retained as a descriptive input summary.
+Use annual years, five-year age bands 20–24 through 85–89 and 90+, and the five known race/origin categories plus `Non-Hispanic Unknown Race`. Known categories have positive denominators; unknown race has zero population. Display placeholders below age 20 may remain only if count and population are both zero. Eligible P2 cells number 2160, of which 1800 have known race. C2 counts must exactly equal P2 counts in every eligible cell.
 
-Stage labels are Localized, Regional, Distant and Unknown. The four stage-rate
-periods start in 2004. Check native dictionaries before substituting custom recodes.
+## P3 sex-specific rate cells
+
+Filename: `P3_GB_AllMalignant_YearAge5_Sex_RaceEthnicity_SEER17_2000-2023.txt`
+
+Required fields are those of P2 plus `Sex`, labeled `Male` and `Female`. Total-sex display rows may be present and are excluded. Male plus female counts and populations must exactly equal P2 in each race/year/age cell. There are 3600 known-race male/female eligible cells. Unknown race is audited separately. The `Rate` field is not used; rates are recalculated from counts and denominators.
+
+## Generated private files
+
+`prepare_inputs.R` creates all denominator cells, classification lists, reference shares, WLS summaries and pooled decomposition cells required by the remaining scripts. These files are computational intermediates, not public inputs. Results and logs are written under the output directory. Do not upload them with the code.
