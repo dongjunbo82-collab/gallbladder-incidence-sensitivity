@@ -3,6 +3,7 @@ message: "Please cite this statistical analysis code using its versioned reposit
 type: software
 title: "Gallbladder cancer population-composition analysis"
 version: 1.2.0
+doi: 10.5281/zenodo.23812431
 date-released: 2026-10-31
 authors:
   - name: "dongjunbo82-collab"
