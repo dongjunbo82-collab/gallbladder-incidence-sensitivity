@@ -65,5 +65,22 @@ for(win in names(windows))for(gr in c('20-49','50+'))for(ref in c('Common 2000',
 }
 wr(paired,'sex_paired_trends.csv');wr(annual,'sex_annual_rates.csv');wr(do.call(rbind,between),'sex_between_differences.csv');wr(do.call(rbind,fitdiag),'sex_generator_diagnostics.csv');wr(x,'sex_analysis_cells_PRIVATE.csv');wr(unknown,'sex_unknown_race_counts.csv')
 wr(data.frame(check=c('Eligible known-ethnicity cells','P2 count mismatch','P2 population mismatch','Known-ethnicity cases','Unknown-ethnicity cases'),value=c(nrow(x),sum(ck$count_p3!=ck$count_p2),sum(ck$population_p3!=ck$population_p2),sum(x$count),sum(unknown$count))),'sex_export_audit.csv')
+# Pooled absolute rates: sum counts and person-years before standardization.
+pooled<-list()
+for(sx in c('Female','Male'))for(gr in c('20-49','50+'))for(period in c('2000-2004','2019-2023')){
+ yrs<-if(period=='2000-2004')2000:2004 else 2019:2023
+ d<-aggregate(cbind(count,population)~race+age_start,subset(x,sex==sx&group==gr&year%in%yrs),sum)
+ d<-merge(d,q[c('race','age_start','common_q')],by=c('race','age_start'))
+ aw<-std[as.character(d$age_start)]/sum(std[as.character(unique(d$age_start))])
+ share<-d$population/ave(d$population,d$age_start,FUN=sum)
+ for(method in c('Age only','Joint')){
+  a<-1e5*aw*if(method=='Age only')share/d$population else d$common_q/d$population
+  rate<-sum(a*d$count);variance<-sum(a^2*d$count);u<-max(a)
+  lower<-if(rate==0)0 else qgamma(.025,rate^2/variance,scale=variance/rate)
+  upper<-qgamma(.975,(rate+u)^2/(variance+u^2),scale=(variance+u^2)/(rate+u))
+  pooled[[paste(sx,gr,period,method)]]<-data.frame(sex=sx,group=gr,period=period,method=method,cases=sum(d$count),person_years=sum(d$population),rate=rate,variance=variance,max_coefficient=u,lower=lower,upper=upper)
+ }
+}
+wr(do.call(rbind,pooled),'sex_pooled_rates.csv')
 writeLines(capture.output(sessionInfo()),file.path(out,'session_info_sex_analysis.txt'))
 print(subset(paired,group=='20-49'));print(subset(do.call(rbind,between),group=='20-49'));print(do.call(rbind,fitdiag))
