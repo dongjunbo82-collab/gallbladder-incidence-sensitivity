@@ -2,7 +2,7 @@
 
 R code for age-only and joint age–ethnicity standardization of gallbladder cancer incidence in US SEER registries, paired APC comparisons, descriptive rate decomposition, and sex-stratified sensitivity analysis.
 
-Software release: 1.1.0. Archive DOI is recorded in the release metadata.
+Version 1.1.0 archive: [10.5281/zenodo.23812079](https://doi.org/10.5281/zenodo.23812079).
 
 This is a code-only repository. It contains no manuscript, source export, case record, population dataset, analytical result dataset, figure, or author contact details. Obtain the authorized inputs separately under the applicable SEER access and data-use terms. Do not place inputs or generated outputs inside this repository.
 
