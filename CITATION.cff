@@ -2,10 +2,9 @@ cff-version: 1.2.0
 message: "Please cite this statistical analysis code using its versioned repository release."
 type: software
 title: "Gallbladder cancer population-composition analysis"
-version: 1.1.0
+version: 1.2.0
 date-released: 2026-10-31
-doi: "10.5281/zenodo.23812079"
 authors:
   - name: "dongjunbo82-collab"
 repository-code: "https://github.com/dongjunbo82-collab/gallbladder-incidence-sensitivity"
-url: "https://github.com/dongjunbo82-collab/gallbladder-incidence-sensitivity/releases/tag/v1.1.0"
+url: "https://github.com/dongjunbo82-collab/gallbladder-incidence-sensitivity/releases/tag/v1.2.0"
